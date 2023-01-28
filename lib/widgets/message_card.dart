@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:studio_chat/api/api.dart';
+import 'package:studio_chat/helper/date_time_format.dart';
 
 import '../models/messages_model.dart';
-
 
 class MessageCard extends StatefulWidget {
   const MessageCard({super.key, required this.messagesModel});
@@ -42,12 +42,14 @@ class _MessageCardState extends State<MessageCard> {
         children: [
           Row(
             children: [
-              Icon(
-                Icons.done_all_outlined,
-                color: Colors.blue,
-              ),
+              if (widget.messagesModel.read.isNotEmpty)
+                Icon(
+                  Icons.done_all_outlined,
+                  color: Colors.blue,
+                ),
               SizedBox(width: 10),
-              Text(widget.messagesModel.read),
+              Text(DateTimeFormat.formatTime(
+                  context: context, time: widget.messagesModel.sent)),
             ],
           ),
           Flexible(
@@ -78,6 +80,9 @@ class _MessageCardState extends State<MessageCard> {
   }
 
   Widget _friendMessage({required double width, required double height}) {
+    if (widget.messagesModel.read.isEmpty) {
+      APIs.updateReadStatusMessage(message: widget.messagesModel);
+    }
     return Padding(
       padding: EdgeInsets.only(
           top: height * 0.01,
@@ -111,12 +116,13 @@ class _MessageCardState extends State<MessageCard> {
           ),
           Row(
             children: [
-              Text(widget.messagesModel.read),
+              Text(DateTimeFormat.formatTime(
+                  context: context, time: widget.messagesModel.sent)),
               SizedBox(width: 10),
-              Icon(
-                Icons.done_all_outlined,
-                color: Colors.blue,
-              ),
+              // Icon(
+              //   Icons.done_all_outlined,
+              //   color: Colors.blue,
+              // ),
             ],
           ),
         ],

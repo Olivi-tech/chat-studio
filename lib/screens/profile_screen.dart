@@ -7,7 +7,6 @@ import 'package:studio_chat/api/api.dart';
 import 'package:studio_chat/auth/auth_provider.dart';
 import 'package:studio_chat/helper/show_snack_bar.dart';
 
-
 class UserProfile extends StatefulWidget {
   const UserProfile({super.key});
 
@@ -23,6 +22,7 @@ class _UserProfileState extends State<UserProfile> {
     log(_image == null ? 'null' : 'image is not null');
     double height = MediaQuery.of(context).size.height;
     double width = MediaQuery.of(context).size.width;
+    log('width: $width. height: $height');
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: WillPopScope(
@@ -59,7 +59,7 @@ class _UserProfileState extends State<UserProfile> {
                                     radius: 100),
                               ),
                         Positioned(
-                          top: height * 0.2,
+                          top: height > 750 ? height * 0.15 : height * 0.2,
                           left: width * 0.3,
                           child: MaterialButton(
                               color: Colors.white,

@@ -101,11 +101,19 @@ class APIs {
         fromId: user!.uid,
         toId: usersModel.id,
         msg: msg,
-        read: 'not read yet',
+        read: '',
         sent: time,
         type: Type.text);
     final ref = FirebaseFirestore.instance
         .collection('chats/${getChatId(usersModel.id)}/messages/');
     await ref.doc(time).set(msgModel.toJson());
+  }
+
+  static Future<void> updateReadStatusMessage(
+      {required MessagesModel message}) async {
+    FirebaseFirestore.instance
+        .collection('chats/${getChatId(message.fromId)}/messages')
+        .doc(message.sent)
+        .update({'read': DateTime.now().millisecondsSinceEpoch.toString()});
   }
 }
