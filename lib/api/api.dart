@@ -51,7 +51,6 @@ class APIs {
         .then((user) async {
       if (user.exists) {
         me = ChattingUsersModel.fromJson(user.data()!);
-        // log(me.toString());
       } else {
         await createUser().then((value) => getSelfInfo());
       }
@@ -81,7 +80,6 @@ class APIs {
   }
 
   static String getChatId(String friendId) {
-    // log('friendId = $friendId');
     return user!.uid.hashCode <= friendId.hashCode
         ? '${user!.uid}_$friendId'
         : '${friendId}_${user!.uid}';
@@ -112,7 +110,7 @@ class APIs {
   static Future<void> updateReadStatusMessage(
       {required MessagesModel message}) async {
     FirebaseFirestore.instance
-        .collection('chats/${getChatId(message.fromId)}/messages')
+        .collection('chats/${getChatId(message.fromId)}/messages/')
         .doc(message.sent)
         .update({'read': DateTime.now().millisecondsSinceEpoch.toString()});
   }

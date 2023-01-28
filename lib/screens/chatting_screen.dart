@@ -93,7 +93,7 @@ class ChattingScreen extends StatelessWidget {
                     fontSize: 16,
                     fontWeight: FontWeight.bold),
               ),
-              Text('Last Seen Not Available'),
+              Text('1:45 PM'),
             ],
           )
         ],
@@ -154,7 +154,8 @@ class ChattingScreen extends StatelessWidget {
           color: Colors.blue,
           onPressed: () {
             if (_msgController.text.isNotEmpty) {
-              APIs.sendMessage(msg: _msgController.text, usersModel: user);
+              APIs.sendMessage(
+                  msg: _msgController.text.trim(), usersModel: user);
               _msgController.clear();
             }
           },
