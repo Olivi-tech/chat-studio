@@ -134,7 +134,7 @@ class _HomePageState extends State<HomePage> {
                     itemBuilder: (BuildContext context, int index) {
                       // log('user at home page ${_usersList.toString()}');
                       return ChatUserCard(
-                        currentUserMap: _searchingProvider
+                        user: _searchingProvider
                             ? _searchList[index]
                             : _usersList[index],
                       );

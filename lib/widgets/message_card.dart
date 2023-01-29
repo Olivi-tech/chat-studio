@@ -48,8 +48,7 @@ class _MessageCardState extends State<MessageCard> {
                   color: Colors.blue,
                 ),
               SizedBox(width: 10),
-              Text(DateTimeFormat.formatTime(
-                  context: context, time: widget.messagesModel.sent)),
+              Text(DateTimeFormat.formatTime(time: widget.messagesModel.sent)),
             ],
           ),
           Flexible(
@@ -116,8 +115,7 @@ class _MessageCardState extends State<MessageCard> {
           ),
           Row(
             children: [
-              Text(DateTimeFormat.formatTime(
-                  context: context, time: widget.messagesModel.sent)),
+              Text(DateTimeFormat.formatTime(time: widget.messagesModel.sent)),
               SizedBox(width: 10),
               // Icon(
               //   Icons.done_all_outlined,
