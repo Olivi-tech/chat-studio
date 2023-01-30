@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:studio_chat/helper/show_snack_bar.dart';
 import 'package:studio_chat/models/chatting_users_model.dart';
 import 'package:studio_chat/models/messages_model.dart';
 
@@ -93,7 +95,9 @@ class APIs {
   }
 
   static Future<void> sendMessage(
-      {required ChattingUsersModel usersModel, required String msg}) async {
+      {required ChattingUsersModel usersModel,
+      required String msg,
+      required Type type}) async {
     final time = DateTime.now().millisecondsSinceEpoch.toString();
     MessagesModel msgModel = MessagesModel(
         fromId: user!.uid,
@@ -101,7 +105,7 @@ class APIs {
         msg: msg,
         read: '',
         sent: time,
-        type: Type.text);
+        type: type);
     final ref = FirebaseFirestore.instance
         .collection('chats/${getChatId(usersModel.id)}/messages/');
     await ref.doc(time).set(msgModel.toJson());
@@ -122,5 +126,22 @@ class APIs {
         .orderBy('sent', descending: true)
         .limit(1)
         .snapshots();
+  }
+
+  static Future<void> sendChatImage(
+      {required File file,
+      required ChattingUsersModel user,
+      required BuildContext context}) async {
+    final ext = file.path.split('.').last;
+    final ref = storage.ref().child(
+        'images/${getChatId(user.id)}${DateTime.now().millisecondsSinceEpoch}.$ext');
+    SnackBarHelper.showSnack(context: context, msg: 'Uploading Image');
+    await ref.putFile(file, SettableMetadata(contentType: 'image/$ext')).then(
+      (p0) {
+        log('Data Transferred = ${p0.bytesTransferred / 1000} bytes');
+      },
+    );
+    final imgUrl = await ref.getDownloadURL();
+    await sendMessage(msg: imgUrl, usersModel: user, type: Type.image);
   }
 }

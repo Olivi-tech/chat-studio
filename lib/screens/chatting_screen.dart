@@ -1,11 +1,17 @@
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 import 'package:studio_chat/api/api.dart';
+import 'package:studio_chat/helper/show_snack_bar.dart';
 import 'package:studio_chat/models/chatting_users_model.dart';
 import 'package:studio_chat/models/messages_model.dart';
+import 'package:studio_chat/provider/emoji_provider.dart';
 import 'package:studio_chat/widgets/message_card.dart';
 
 class ChattingScreen extends StatelessWidget {
@@ -18,47 +24,72 @@ class ChattingScreen extends StatelessWidget {
     // log(user.toString());
     double height = MediaQuery.of(context).size.height;
     double width = MediaQuery.of(context).size.width;
-    return SafeArea(
-      child: Scaffold(
-        appBar: _appBar(context: context, height: height, width: width),
-        body: Column(children: [
-          Expanded(
-            child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-              stream: APIs.getMessages(usersModel: user),
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  List<QueryDocumentSnapshot<Map<String, dynamic>>> data =
-                      snapshot.data!.docs;
-                  _list = data.map((e) {
-                    return MessagesModel.fromJson(e.data());
-                  }).toList();
-                  if (_list.isNotEmpty) {
-                    return ListView.builder(
-                      itemCount: _list.length,
-                      physics: BouncingScrollPhysics(),
-                      itemBuilder: (BuildContext context, int index) {
-                        return MessageCard(
-                          messagesModel: _list[index],
-                        );
-                      },
-                    );
-                  } else if (_list.isEmpty) {
-                    return Center(
-                      child: Text('Say Hi 👋'),
-                    );
+    return WillPopScope(
+      onWillPop: () {
+        if (Provider.of<EmojiProvider>(context).isShowingEmoji) {
+          Provider.of<EmojiProvider>(context).isShowingEmoji =
+              !Provider.of<EmojiProvider>(context).isShowingEmoji;
+
+          return Future.value(false);
+        }
+        return Future.value(true);
+      },
+      child: SafeArea(
+        child: Scaffold(
+          appBar: _appBar(context: context, height: height, width: width),
+          body: Column(children: [
+            Expanded(
+              child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                stream: APIs.getMessages(usersModel: user),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    List<QueryDocumentSnapshot<Map<String, dynamic>>> data =
+                        snapshot.data!.docs;
+                    _list = data.map((e) {
+                      return MessagesModel.fromJson(e.data());
+                    }).toList();
+                    if (_list.isNotEmpty) {
+                      return ListView.builder(
+                        itemCount: _list.length,
+                        physics: BouncingScrollPhysics(),
+                        itemBuilder: (BuildContext context, int index) {
+                          return MessageCard(
+                            messagesModel: _list[index],
+                          );
+                        },
+                      );
+                    } else if (_list.isEmpty) {
+                      return Center(
+                        child: Text('Say Hi 👋'),
+                      );
+                    }
+                  } else if (snapshot.connectionState ==
+                          ConnectionState.waiting ||
+                      snapshot.hasError) {
+                    log('waiting for data');
+                    return Center(child: CircularProgressIndicator());
                   }
-                } else if (snapshot.connectionState ==
-                        ConnectionState.waiting ||
-                    snapshot.hasError) {
-                  log('waiting for data');
-                  return Center(child: CircularProgressIndicator());
-                }
-                return SizedBox();
-              },
+                  return SizedBox();
+                },
+              ),
             ),
-          ),
-          _inPut(),
-        ]),
+            _inPut(context: context),
+            Consumer<EmojiProvider>(
+                builder: (BuildContext context, value, child) =>
+                    value.isShowingEmoji
+                        ? SizedBox(
+                            height: height * 0.35,
+                            child: EmojiPicker(
+                              textEditingController: _msgController,
+                              config: Config(
+                                  columns: 8,
+                                  bgColor: Colors.white,
+                                  emojiSizeMax: 30),
+                            ),
+                          )
+                        : SizedBox(width: 0, height: 0)),
+          ]),
+        ),
       ),
     );
   }
@@ -101,7 +132,7 @@ class ChattingScreen extends StatelessWidget {
     );
   }
 
-  Widget _inPut() {
+  Widget _inPut({required BuildContext context}) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
       child: Row(children: [
@@ -112,7 +143,15 @@ class ChattingScreen extends StatelessWidget {
             child: Row(
               children: [
                 IconButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    FocusScope.of(context).unfocus();
+                    Future.delayed(Duration(seconds: 1)).then((E) {
+                      Provider.of<EmojiProvider>(context, listen: false)
+                              .isShowingEmoji =
+                          !Provider.of<EmojiProvider>(context, listen: false)
+                              .isShowingEmoji;
+                    });
+                  },
                   icon: Icon(
                     Icons.emoji_emotions_outlined,
                     color: Colors.blueAccent,
@@ -121,6 +160,16 @@ class ChattingScreen extends StatelessWidget {
                 ),
                 Expanded(
                   child: TextField(
+                      onTap: () {
+                        if (Provider.of<EmojiProvider>(context, listen: false)
+                                .isShowingEmoji ==
+                            true)
+                          Provider.of<EmojiProvider>(context, listen: false)
+                              .isShowingEmoji = !Provider.of<EmojiProvider>(
+                                  context,
+                                  listen: false)
+                              .isShowingEmoji;
+                      },
                       keyboardType: TextInputType.multiline,
                       maxLines: null,
                       controller: _msgController,
@@ -136,7 +185,19 @@ class ChattingScreen extends StatelessWidget {
                   ),
                 ),
                 IconButton(
-                  onPressed: () {},
+                  onPressed: () async {
+                    final ImagePicker _picker = ImagePicker();
+                    // Pick an image
+                    final XFile? image = await _picker.pickImage(
+                        source: ImageSource.camera, imageQuality: 80);
+                    if (image != null) {
+                      await APIs.sendChatImage(
+                          file: File(image.path), user: user, context: context);
+                    } else {
+                      SnackBarHelper.showSnack(
+                          context: context, msg: 'Image Not Captured');
+                    }
+                  },
                   icon: Icon(
                     Icons.camera_alt_outlined,
                     color: Colors.blueAccent,
@@ -155,7 +216,9 @@ class ChattingScreen extends StatelessWidget {
           onPressed: () {
             if (_msgController.text.isNotEmpty) {
               APIs.sendMessage(
-                  msg: _msgController.text.trim(), usersModel: user);
+                  msg: _msgController.text.trim(),
+                  usersModel: user,
+                  type: Type.text);
               _msgController.clear();
             }
           },

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
+import 'package:studio_chat/provider/emoji_provider.dart';
 import 'package:studio_chat/provider/is_searching.dart';
 import 'package:studio_chat/provider/sign_in_provider.dart';
 import 'package:studio_chat/screens/status_page.dart';
@@ -24,6 +25,9 @@ class MyApp extends StatelessWidget {
         ),
         ChangeNotifierProvider(
           create: (BuildContext context) => IsSearching(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => EmojiProvider(),
         ),
       ],
       child: MaterialApp(

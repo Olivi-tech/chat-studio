@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:studio_chat/api/api.dart';
 import 'package:studio_chat/helper/date_time_format.dart';
@@ -67,10 +68,23 @@ class _MessageCardState extends State<MessageCard> {
                       topRight: Radius.circular(15),
                       bottomLeft: Radius.circular(15)),
                   border: Border.all(color: Colors.blue)),
-              child: Text(
-                widget.messagesModel.msg,
-                style: TextStyle(fontSize: 16),
-              ),
+              child: widget.messagesModel.type == Type.text
+                  ? Text(
+                      widget.messagesModel.msg,
+                      style: TextStyle(fontSize: 16),
+                    )
+                  : ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: CachedNetworkImage(
+                        imageUrl: widget.messagesModel.msg,
+                        errorWidget: (context, url, error) =>
+                            Icon(Icons.image_not_supported),
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                      ),
+                    ),
             ),
           ),
         ],
@@ -107,20 +121,29 @@ class _MessageCardState extends State<MessageCard> {
                       topRight: Radius.circular(15),
                       bottomRight: Radius.circular(15)),
                   border: Border.all(color: Colors.blue)),
-              child: Text(
-                widget.messagesModel.msg,
-                style: TextStyle(fontSize: 16),
-              ),
+              child: widget.messagesModel.type == Type.text
+                  ? Text(
+                      widget.messagesModel.msg,
+                      style: TextStyle(fontSize: 16),
+                    )
+                  : ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: CachedNetworkImage(
+                        imageUrl: widget.messagesModel.msg,
+                        errorWidget: (context, url, error) =>
+                            Icon(Icons.image_not_supported, size: 50),
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                      ),
+                    ),
             ),
           ),
           Row(
             children: [
               Text(DateTimeFormat.formatTime(time: widget.messagesModel.sent)),
               SizedBox(width: 10),
-              // Icon(
-              //   Icons.done_all_outlined,
-              //   color: Colors.blue,
-              // ),
             ],
           ),
         ],

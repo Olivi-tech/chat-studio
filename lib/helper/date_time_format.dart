@@ -9,7 +9,6 @@ class DateTimeFormat {
   static String getLastMessageTime(String time) {
     final sent = DateTime.fromMillisecondsSinceEpoch(int.parse(time));
     final now = DateTime.now();
-
     if (sent.day == now.day &&
         sent.month == now.month &&
         sent.year == now.year) {
