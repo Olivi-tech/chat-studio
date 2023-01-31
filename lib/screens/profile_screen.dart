@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:studio_chat/api/api.dart';
@@ -31,125 +32,134 @@ class _UserProfileState extends State<UserProfile> {
           return Future.value(true);
         },
         child: Scaffold(
+          backgroundColor: Colors.white,
+          appBar: AppBar(
+            backgroundColor: Colors.white,
+            elevation: 0,
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back_ios),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
           body: Padding(
             padding: EdgeInsets.only(left: 15, right: 15, top: 30),
             child: SingleChildScrollView(
-              child: SizedBox(
-                height: height,
-                width: width,
-                child: Column(
-                  children: [
-                    Stack(
-                      children: [
-                        _image != null
-                            ? ClipRRect(
-                                borderRadius: BorderRadius.circular(height),
-                                child: Image.file(
-                                  File(_image!),
-                                  width: height * 0.28,
-                                  height: height * 0.28,
-                                  fit: BoxFit.cover,
-                                ))
-                            : ClipRRect(
-                                borderRadius:
-                                    BorderRadius.circular(height * 0.1),
-                                child: CircleAvatar(
-                                    backgroundImage:
-                                        NetworkImage(APIs.me.image),
-                                    radius: 100),
+              child: Column(
+                children: [
+                  // SizedBox(height: height * 0.05),
+                  Stack(
+                    children: [
+                      _image != null
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(height * 0.1),
+                              child: Image.file(
+                                File(_image!),
+                                fit: BoxFit.cover,
+                                width: height * 0.21,
+                                height: height * 0.21,
+                              ))
+                          : ClipRRect(
+                              borderRadius:
+                                  BorderRadius.circular(height * 0.15),
+                              child: CachedNetworkImage(
+                                imageUrl: APIs.me.image,
+                                fit: BoxFit.cover,
+                                width: height * 0.21,
+                                height: height * 0.21,
+                                errorWidget: (context, url, error) =>
+                                    Icon(Icons.person_2_outlined),
+                                placeholder: (context, url) =>
+                                    Center(child: CircularProgressIndicator()),
+                              )),
+                      Positioned(
+                        top: height > 750 ? height * 0.15 : height * 0.2,
+                        left: width * 0.3,
+                        child: MaterialButton(
+                            color: Colors.white,
+                            elevation: 2,
+                            shape: CircleBorder(),
+                            child: Icon(Icons.edit_sharp),
+                            onPressed: () => _showBottomSheet(
+                                context: context,
+                                height: height,
+                                width: width)),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: height * 0.02),
+                  Text(
+                    APIs.me.email,
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  SizedBox(height: height * 0.03),
+                  Container(
+                      height: height * 0.2,
+                      child: Form(
+                          key: _formKey,
+                          child: Column(
+                            children: [
+                              TextFormField(
+                                initialValue: APIs.me.name,
+                                onSaved: (newValue) => APIs.me.name = newValue!,
+                                // onChanged: (value) => widget.name = value,
+                                validator: (value) =>
+                                    value != null && value.isNotEmpty
+                                        ? null
+                                        : 'Required Field',
+                                decoration: InputDecoration(
+                                    hintText: 'Name',
+                                    labelText: 'Your Name',
+                                    border: OutlineInputBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(10))),
                               ),
-                        Positioned(
-                          top: height > 750 ? height * 0.15 : height * 0.2,
-                          left: width * 0.3,
-                          child: MaterialButton(
-                              color: Colors.white,
-                              elevation: 2,
-                              shape: CircleBorder(),
-                              child: Icon(Icons.edit_sharp),
-                              onPressed: () => _showBottomSheet(
-                                  context: context,
-                                  height: height,
-                                  width: width)),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: height * 0.02),
-                    Text(
-                      APIs.me.email,
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                    ),
-                    SizedBox(height: height * 0.03),
-                    Container(
-                        height: height * 0.2,
-                        child: Form(
-                            key: _formKey,
-                            child: Column(
-                              children: [
-                                TextFormField(
-                                  initialValue: APIs.me.name,
-                                  onSaved: (newValue) =>
-                                      APIs.me.name = newValue!,
-                                  // onChanged: (value) => widget.name = value,
-                                  validator: (value) =>
-                                      value != null && value.isNotEmpty
-                                          ? null
-                                          : 'Required Field',
-                                  decoration: InputDecoration(
-                                      hintText: 'Name',
-                                      labelText: 'Your Name',
-                                      border: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(10))),
-                                ),
-                                SizedBox(height: 15),
-                                TextFormField(
-                                  initialValue: APIs.me.about,
-                                  onSaved: (newValue) =>
-                                      APIs.me.about = newValue!,
-                                  // onChanged: (value) => about = value,
-                                  validator: (value) =>
-                                      value != null && value.isNotEmpty
-                                          ? null
-                                          : 'Required Field',
-                                  decoration: InputDecoration(
-                                      hintText: 'About',
-                                      labelText: 'Your About',
-                                      border: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(10))),
-                                )
-                              ],
-                            ))),
-                    Container(
-                        height: height * 0.1,
-                        child: SizedBox(
-                          child: Center(
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                  shape: StadiumBorder(),
-                                  minimumSize: Size(
-                                    width * 0.5,
-                                    height * 0.06,
-                                  )),
-                              onPressed: () async {
-                                if (_formKey.currentState!.validate()) {
-                                  _formKey.currentState!.save();
-                                  await APIs.updateUser().then(
-                                    (value) {
-                                      SnackBarHelper.showSnack(
-                                          context: context,
-                                          msg: 'User Updated Successfully');
-                                    },
-                                  );
-                                }
-                              },
-                              child: Text('Update'),
-                            ),
+                              SizedBox(height: 15),
+                              TextFormField(
+                                initialValue: APIs.me.about,
+                                onSaved: (newValue) =>
+                                    APIs.me.about = newValue!,
+                                // onChanged: (value) => about = value,
+                                validator: (value) =>
+                                    value != null && value.isNotEmpty
+                                        ? null
+                                        : 'Required Field',
+                                decoration: InputDecoration(
+                                    hintText: 'About',
+                                    labelText: 'Your About',
+                                    border: OutlineInputBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(10))),
+                              )
+                            ],
+                          ))),
+                  Container(
+                      height: height * 0.1,
+                      child: SizedBox(
+                        child: Center(
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                                shape: StadiumBorder(),
+                                minimumSize: Size(
+                                  width * 0.5,
+                                  height * 0.06,
+                                )),
+                            onPressed: () async {
+                              if (_formKey.currentState!.validate()) {
+                                _formKey.currentState!.save();
+                                await APIs.updateUser().then(
+                                  (value) {
+                                    SnackBarHelper.showSnack(
+                                        context: context,
+                                        msg: 'User Updated Successfully');
+                                  },
+                                );
+                              }
+                            },
+                            child: Text('Update'),
                           ),
-                        )),
-                  ],
-                ),
+                        ),
+                      )),
+                ],
               ),
             ),
           ),

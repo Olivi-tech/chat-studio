@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 
 class EmojiProvider extends ChangeNotifier {
@@ -7,5 +9,6 @@ class EmojiProvider extends ChangeNotifier {
   set isShowingEmoji(value) {
     _isShowingEmoji = value;
     notifyListeners();
+    log('Emoji notifi lister is called');
   }
 }

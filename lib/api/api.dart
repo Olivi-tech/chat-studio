@@ -91,6 +91,7 @@ class APIs {
       {required ChattingUsersModel usersModel}) {
     return FirebaseFirestore.instance
         .collection('chats/${getChatId(usersModel.id)}/messages/')
+        .orderBy('sent', descending: true)
         .snapshots();
   }
 
@@ -135,12 +136,8 @@ class APIs {
     final ext = file.path.split('.').last;
     final ref = storage.ref().child(
         'images/${getChatId(user.id)}${DateTime.now().millisecondsSinceEpoch}.$ext');
-    SnackBarHelper.showSnack(context: context, msg: 'Uploading Image');
-    await ref.putFile(file, SettableMetadata(contentType: 'image/$ext')).then(
-      (p0) {
-        log('Data Transferred = ${p0.bytesTransferred / 1000} bytes');
-      },
-    );
+    // SnackBarHelper.showSnack(context: context, msg: 'Uploading Image');
+    await ref.putFile(file, SettableMetadata(contentType: 'image/$ext'));
     final imgUrl = await ref.getDownloadURL();
     await sendMessage(msg: imgUrl, usersModel: user, type: Type.image);
   }

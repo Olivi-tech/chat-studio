@@ -81,7 +81,10 @@ class _MessageCardState extends State<MessageCard> {
                             Icon(Icons.image_not_supported),
                         fit: BoxFit.cover,
                         placeholder: (context, url) => Center(
-                          child: CircularProgressIndicator(),
+                          child: Padding(
+                            padding: const EdgeInsets.all(3.0),
+                            child: CircularProgressIndicator(),
+                          ),
                         ),
                       ),
                     ),
@@ -134,7 +137,10 @@ class _MessageCardState extends State<MessageCard> {
                             Icon(Icons.image_not_supported, size: 50),
                         fit: BoxFit.cover,
                         placeholder: (context, url) => Center(
-                          child: CircularProgressIndicator(),
+                          child: Padding(
+                            padding: const EdgeInsets.all(3.0),
+                            child: CircularProgressIndicator(),
+                          ),
                         ),
                       ),
                     ),

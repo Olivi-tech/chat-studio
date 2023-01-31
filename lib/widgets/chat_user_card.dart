@@ -1,3 +1,6 @@
+import 'dart:developer';
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:studio_chat/api/api.dart';
@@ -5,6 +8,7 @@ import 'package:studio_chat/helper/date_time_format.dart';
 import 'package:studio_chat/models/chatting_users_model.dart';
 import 'package:studio_chat/models/messages_model.dart';
 import 'package:studio_chat/screens/chatting_screen.dart';
+import 'package:studio_chat/widgets/profile_dialog.dart';
 
 class ChatUserCard extends StatelessWidget {
   const ChatUserCard({super.key, required this.user});
@@ -14,6 +18,8 @@ class ChatUserCard extends StatelessWidget {
   Widget build(BuildContext context) {
     double height = MediaQuery.of(context).size.height;
     double width = MediaQuery.of(context).size.width;
+    log(height.toString());
+
     return Card(
       elevation: 0.5,
       margin: EdgeInsets.only(
@@ -43,12 +49,31 @@ class ChatUserCard extends StatelessWidget {
                       )));
             },
             title: Text(user.name),
-            leading: CircleAvatar(
-              backgroundImage: NetworkImage(user.image),
-              radius: 30,
+            leading: InkWell(
+              onTap: () => showDialog(
+                context: context,
+                builder: (context) => ProfileDialog(user: user),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(height * 0.1),
+                child: CachedNetworkImage(
+                  imageUrl: user.image,
+                  fit: BoxFit.cover,
+                  width: height <= 740 ? height * 0.07 : height * 0.06,
+                  height: height <= 740 ? height * 0.07 : height * 0.06,
+                  errorWidget: (context, url, error) =>
+                      Icon(Icons.person_2_outlined),
+                  placeholder: (context, url) =>
+                      Center(child: CircularProgressIndicator()),
+                ),
+              ),
             ),
             subtitle: Text(
-              _message != null ? _message!.msg : user.about,
+              _message != null
+                  ? _message!.type == Type.text
+                      ? _message!.msg
+                      : 'image'
+                  : user.about,
               maxLines: 1,
             ),
             trailing: _message == null
