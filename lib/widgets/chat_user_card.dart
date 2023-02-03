@@ -1,24 +1,21 @@
-import 'dart:developer';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:studio_chat/api/api.dart';
 import 'package:studio_chat/helper/date_time_format.dart';
-import 'package:studio_chat/models/chatting_users_model.dart';
+import 'package:studio_chat/models/chat_user.dart';
 import 'package:studio_chat/models/messages_model.dart';
 import 'package:studio_chat/screens/chatting_screen.dart';
 import 'package:studio_chat/widgets/profile_dialog.dart';
 
 class ChatUserCard extends StatelessWidget {
   const ChatUserCard({super.key, required this.user});
-  final ChattingUsersModel user;
+  final ChatUser user;
   static MessagesModel? _message;
   @override
   Widget build(BuildContext context) {
     double height = MediaQuery.of(context).size.height;
     double width = MediaQuery.of(context).size.width;
-    log(height.toString());
 
     return Card(
       elevation: 0.5,

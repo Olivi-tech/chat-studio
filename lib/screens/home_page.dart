@@ -1,10 +1,13 @@
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:studio_chat/api/api.dart';
 import 'package:studio_chat/auth/auth_provider.dart';
 import 'package:studio_chat/helper/show_snack_bar.dart';
-import 'package:studio_chat/models/chatting_users_model.dart';
+import 'package:studio_chat/models/chat_user.dart';
 import 'package:studio_chat/provider/is_searching.dart';
 import 'package:studio_chat/screens/profile_screen.dart';
 import 'package:studio_chat/widgets/chat_user_card.dart';
@@ -19,14 +22,26 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   late final TextEditingController _searchController;
-  List<ChattingUsersModel> _usersList = [];
-  List<ChattingUsersModel> _searchList = [];
+  List<ChatUser> _usersList = [];
+  List<ChatUser> _searchList = [];
   late Stream<QuerySnapshot<Map<String, dynamic>>> snapshots;
 
   @override
   void initState() {
     super.initState();
     snapshots = APIs.getUsers();
+    APIs.updateLastActive(isOnline: true);
+    SystemChannels.lifecycle.setMessageHandler(
+      (message) {
+        if (message!.contains('resumed')) {
+          APIs.updateLastActive(
+            isOnline: true,
+          );
+        } else
+          APIs.updateLastActive(isOnline: false);
+        return Future.value(message);
+      },
+    );
     APIs.getSelfInfo();
     _searchController = TextEditingController();
   }
@@ -121,9 +136,8 @@ class _HomePageState extends State<HomePage> {
             builder: (context, snapshot) {
               if (snapshot.hasData) {
                 final data = snapshot.data!.docs;
-                _usersList = data
-                    .map((e) => ChattingUsersModel.fromJson(e.data()))
-                    .toList();
+                _usersList =
+                    data.map((e) => ChatUser.fromJson(e.data())).toList();
 
                 if (_usersList.isNotEmpty) {
                   return ListView.builder(

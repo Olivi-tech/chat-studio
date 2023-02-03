@@ -4,14 +4,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:studio_chat/helper/show_snack_bar.dart';
-import 'package:studio_chat/models/chatting_users_model.dart';
+import 'package:studio_chat/models/chat_user.dart';
 import 'package:studio_chat/models/messages_model.dart';
 
 class APIs {
   static User? get user => FirebaseAuth.instance.currentUser;
   static FirebaseStorage storage = FirebaseStorage.instance;
-  static late ChattingUsersModel me;
+  static late ChatUser me;
   static Future<bool> userExists() async {
     return (await FirebaseFirestore.instance
             .collection('users')
@@ -29,7 +28,7 @@ class APIs {
 
   static Future<void> createUser() async {
     final time = DateTime.now().millisecondsSinceEpoch.toString();
-    final chatUser = ChattingUsersModel(
+    final chatUser = ChatUser(
         email: user!.email!,
         name: user!.displayName!,
         about: 'I am about',
@@ -52,7 +51,7 @@ class APIs {
         .get()
         .then((user) async {
       if (user.exists) {
-        me = ChattingUsersModel.fromJson(user.data()!);
+        me = ChatUser.fromJson(user.data()!);
       } else {
         await createUser().then((value) => getSelfInfo());
       }
@@ -88,7 +87,7 @@ class APIs {
   }
 
   static Stream<QuerySnapshot<Map<String, dynamic>>> getMessages(
-      {required ChattingUsersModel usersModel}) {
+      {required ChatUser usersModel}) {
     return FirebaseFirestore.instance
         .collection('chats/${getChatId(usersModel.id)}/messages/')
         .orderBy('sent', descending: true)
@@ -96,7 +95,7 @@ class APIs {
   }
 
   static Future<void> sendMessage(
-      {required ChattingUsersModel usersModel,
+      {required ChatUser usersModel,
       required String msg,
       required Type type}) async {
     final time = DateTime.now().millisecondsSinceEpoch.toString();
@@ -121,7 +120,7 @@ class APIs {
   }
 
   static Stream<QuerySnapshot<Map<String, dynamic>>> getLastMessage(
-      {required ChattingUsersModel user}) {
+      {required ChatUser user}) {
     return FirebaseFirestore.instance
         .collection('chats/${getChatId(user.id)}/messages/')
         .orderBy('sent', descending: true)
@@ -131,7 +130,7 @@ class APIs {
 
   static Future<void> sendChatImage(
       {required File file,
-      required ChattingUsersModel user,
+      required ChatUser user,
       required BuildContext context}) async {
     final ext = file.path.split('.').last;
     final ref = storage.ref().child(
@@ -140,5 +139,21 @@ class APIs {
     await ref.putFile(file, SettableMetadata(contentType: 'image/$ext'));
     final imgUrl = await ref.getDownloadURL();
     await sendMessage(msg: imgUrl, usersModel: user, type: Type.image);
+  }
+
+  static Stream<QuerySnapshot<Map<String, dynamic>>> getUserInfo(
+      {required ChatUser chatUser}) {
+    log(chatUser.toString());
+    return FirebaseFirestore.instance
+        .collection('users')
+        .where('id', isEqualTo: chatUser.id)
+        .snapshots();
+  }
+
+  static Future<void> updateLastActive({required bool isOnline}) async {
+    FirebaseFirestore.instance.collection('users').doc(user!.uid).update({
+      ChatUser.keyIsOnline: isOnline,
+      ChatUser.keyLastActive: DateTime.now().millisecondsSinceEpoch.toString(),
+    });
   }
 }

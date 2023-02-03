@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -9,8 +8,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
 import 'package:studio_chat/api/api.dart';
+import 'package:studio_chat/helper/date_time_format.dart';
 import 'package:studio_chat/helper/show_snack_bar.dart';
-import 'package:studio_chat/models/chatting_users_model.dart';
+import 'package:studio_chat/models/chat_user.dart';
 import 'package:studio_chat/models/messages_model.dart';
 import 'package:studio_chat/provider/emoji_provider.dart';
 import 'package:studio_chat/provider/progress_provider.dart';
@@ -19,7 +19,7 @@ import 'package:studio_chat/widgets/message_card.dart';
 
 class ChattingScreen extends StatelessWidget {
   const ChattingScreen({super.key, required this.user});
-  final ChattingUsersModel user;
+  final ChatUser user;
   static List<MessagesModel> _list = [];
   static final TextEditingController _msgController = TextEditingController();
   // static late bool ;
@@ -31,7 +31,7 @@ class ChattingScreen extends StatelessWidget {
     double width = MediaQuery.of(context).size.width;
     return WillPopScope(
       onWillPop: () {
-        log('_isDisplayingEmoji : ${Provider.of<EmojiProvider>(context, listen: false).isShowingEmoji}');
+        // log('_isDisplayingEmoji : ${Provider.of<EmojiProvider>(context, listen: false).isShowingEmoji}');
         if (Provider.of<EmojiProvider>(context, listen: false).isShowingEmoji) {
           Provider.of<EmojiProvider>(context, listen: false).isShowingEmoji =
               !Provider.of<EmojiProvider>(context, listen: false)
@@ -88,7 +88,6 @@ class ChattingScreen extends StatelessWidget {
                     } else if (snapshot.connectionState ==
                             ConnectionState.waiting ||
                         snapshot.hasError) {
-                      log('waiting for data');
                       return Center(child: CircularProgressIndicator());
                     }
                     return SizedBox();
@@ -136,48 +135,68 @@ class ChattingScreen extends StatelessWidget {
       required double height,
       required double width}) {
     return AppBar(
-      automaticallyImplyLeading: false,
-      flexibleSpace: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          IconButton(
-            icon: Icon(CupertinoIcons.back),
-            onPressed: () async {
-              Navigator.pop(context);
-            },
-          ),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(height * 0.1),
-            child: CachedNetworkImage(
-              imageUrl: user.image,
-              fit: BoxFit.cover,
-              width: height * 0.055,
-              height: height * 0.055,
-              errorWidget: (context, url, error) =>
-                  Icon(Icons.person_2_outlined),
-              placeholder: (context, url) =>
-                  Center(child: CircularProgressIndicator()),
-            ),
-          ),
-          SizedBox(width: width * 0.03),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                user.name,
-                style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold),
-              ),
-              Text('1:45 PM'),
-            ],
-          )
-        ],
-      ),
-    );
+        automaticallyImplyLeading: false,
+        flexibleSpace: StreamBuilder<QuerySnapshot>(
+            stream: APIs.getUserInfo(chatUser: user),
+            builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+              if (snapshot.hasData) {
+                final data = snapshot.data?.docs;
+                final list = data?.map((e) {
+                      return ChatUser.fromJson(e.data());
+                    }).toList() ??
+                    [];
+
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    IconButton(
+                      icon: Icon(CupertinoIcons.back),
+                      onPressed: () async {
+                        Navigator.pop(context);
+                      },
+                    ),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(height * 0.1),
+                      child: CachedNetworkImage(
+                        imageUrl: list.isNotEmpty ? list[0].image : user.image,
+                        fit: BoxFit.cover,
+                        width: height * 0.055,
+                        height: height * 0.055,
+                        errorWidget: (context, url, error) =>
+                            Icon(Icons.person_2_outlined),
+                        placeholder: (context, url) =>
+                            Center(child: CircularProgressIndicator()),
+                      ),
+                    ),
+                    SizedBox(width: width * 0.03),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          list.isNotEmpty ? list.first.name : user.name,
+                          style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          list.isNotEmpty
+                              ? list.first.isOnline
+                                  ? 'Online'
+                                  : DateTimeFormat.getLastActiveTime(
+                                      lastActiveTime: list.first.lastActive)
+                              : 'last seen not available',
+                        ),
+                      ],
+                    )
+                  ],
+                );
+              } else {
+                return SizedBox();
+              }
+            }));
   }
 
   Widget _inPut({required BuildContext context}) {

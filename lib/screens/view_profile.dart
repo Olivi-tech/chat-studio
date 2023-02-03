@@ -1,11 +1,11 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:studio_chat/helper/date_time_format.dart';
-import 'package:studio_chat/models/chatting_users_model.dart';
+import 'package:studio_chat/models/chat_user.dart';
 
 class ViewProfile extends StatelessWidget {
   const ViewProfile({super.key, required this.user});
-  final ChattingUsersModel user;
+  final ChatUser user;
 
   @override
   Widget build(BuildContext context) {

@@ -1,4 +1,4 @@
-class ChattingUsersModel {
+class ChatUser {
   late String createdAt;
   late String image;
   late String lastActive;
@@ -8,7 +8,7 @@ class ChattingUsersModel {
   late String id;
   late String pushToken;
   late String email;
-  ChattingUsersModel({
+  ChatUser({
     required this.createdAt,
     required this.image,
     required this.lastActive,
@@ -44,7 +44,7 @@ class ChattingUsersModel {
     };
   }
 
-  ChattingUsersModel.fromJson(Map<String, dynamic> json) {
+  ChatUser.fromJson(Map<String, dynamic> json) {
     createdAt = json['createdAt'];
     image = json['image'];
     lastActive = json['lastActive'];

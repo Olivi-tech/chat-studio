@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:intl/intl.dart';
 
 class DateTimeFormat {
@@ -19,8 +21,29 @@ class DateTimeFormat {
     }
   }
 
-  static String getMonth(DateTime date) {
-    switch (date.month) {
+  static String getLastActiveTime({required String? lastActiveTime}) {
+    final int i = int.tryParse(lastActiveTime!) ?? -1;
+    if (i == -1) {
+      return 'Last seen not available';
+    }
+    final time = DateTime.fromMillisecondsSinceEpoch(i);
+    final now = DateTime.now();
+    final formattedTime =
+        DateFormat.jm().format(DateTime.fromMillisecondsSinceEpoch(i));
+    if (time.day == now.day &&
+        time.month == now.month &&
+        time.year == now.year) {
+      return 'Last seen today at $formattedTime ';
+    } else if ((now.difference(time).inHours / 24) == 1) {
+      log('last see today called');
+      return 'Last seen yesterday at $formattedTime';
+    }
+    final month = getMonth(time);
+    return 'last seen ${time.day} $month on $formattedTime ';
+  }
+
+  static String getMonth(DateTime time) {
+    switch (time.month) {
       case 1:
         return 'Jan';
       case 2:
