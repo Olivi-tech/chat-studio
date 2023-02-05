@@ -1,8 +1,5 @@
-import 'dart:developer';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:studio_chat/api/api.dart';
 import 'package:studio_chat/auth/auth_provider.dart';
@@ -20,7 +17,7 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   late final TextEditingController _searchController;
   List<ChatUser> _usersList = [];
   List<ChatUser> _searchList = [];
@@ -29,26 +26,43 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    snapshots = APIs.getUsers();
-    APIs.updateLastActive(isOnline: true);
-    SystemChannels.lifecycle.setMessageHandler(
-      (message) {
-        if (message!.contains('resumed')) {
-          APIs.updateLastActive(
-            isOnline: true,
-          );
-        } else
-          APIs.updateLastActive(isOnline: false);
-        return Future.value(message);
-      },
-    );
+    WidgetsBinding.instance.addObserver(this);
     APIs.getSelfInfo();
+    snapshots = APIs.getUsers();
     _searchController = TextEditingController();
+  }
+
+  @override
+  Future<void> didChangeAppLifecycleState(AppLifecycleState state) async {
+    super.didChangeAppLifecycleState(state);
+    switch (state) {
+      case AppLifecycleState.paused:
+        await APIs.updateLastActive(
+          isOnline: false,
+        );
+        break;
+      case AppLifecycleState.resumed:
+        await APIs.updateLastActive(
+          isOnline: true,
+        );
+        break;
+      case AppLifecycleState.inactive:
+        await APIs.updateLastActive(
+          isOnline: false,
+        );
+        break;
+      case AppLifecycleState.detached:
+        await APIs.updateLastActive(
+          isOnline: false,
+        );
+        break;
+    }
   }
 
   @override
   void dispose() {
     super.dispose();
+    WidgetsBinding.instance.removeObserver(this);
     _searchController.dispose();
   }
 

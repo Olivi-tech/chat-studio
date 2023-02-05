@@ -38,8 +38,8 @@ class DateTimeFormat {
       log('last see today called');
       return 'Last seen yesterday at $formattedTime';
     }
-    final month = getMonth(time);
-    return 'last seen ${time.day} $month on $formattedTime ';
+
+    return 'last seen ${time.day} ${getMonth(time)} on $formattedTime ';
   }
 
   static String getMonth(DateTime time) {
