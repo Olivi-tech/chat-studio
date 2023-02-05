@@ -93,7 +93,7 @@ class _UserProfileState extends State<UserProfile> {
                   ),
                   SizedBox(height: height * 0.03),
                   Container(
-                      height: height * 0.2,
+                      height: height * 0.23,
                       child: Form(
                           key: _formKey,
                           child: Column(

@@ -114,8 +114,8 @@ class APIs {
         type: type);
     final ref = FirebaseFirestore.instance
         .collection('chats/${getChatId(usersModel.id)}/messages/');
-    await ref.doc(time).set(msgModel.toJson()).then((value) =>
-        sendPushNotification(
+    await ref.doc(time).set(msgModel.toJson()).then((value) async =>
+        await sendPushNotification(
             user: usersModel, msg: type == Type.text ? msg : 'image'));
   }
 
@@ -182,15 +182,20 @@ class APIs {
   static Future<void> sendPushNotification(
       {required ChatUser user, required String msg}) async {
     try {
-      final url = 'https://fcm.googleapis.com';
+      final url = 'https://fcm.googleapis.com/fcm/send';
       final body = {
         'to': user.pushToken,
         'notification': {
           'title': user.name,
           'body': msg,
+          'android_channel_id': 'chats',
+          'data': {
+            'user data': 'user data: ${me.id}',
+          },
         }
       };
-      Response res = await post(
+      // Response res =
+      await post(
         Uri.parse(url),
         body: jsonEncode(body),
         headers: {
@@ -199,7 +204,8 @@ class APIs {
               'key=AAAAcw1ACAQ:APA91bEIRezFQsc-SQupbSDjYD3lTfz1aSu807jq5RuwjBnXssnTzTbtMZphTvJga0Vo2Ib17PSO_Wa21_Ru2zPY8i7Uutgsczi9W7ZSb-iz71blB3oNzY9V2yYbpOmRx_LyuLpjusYq'
         },
       );
-      log('$res');
+      // log('${res.statusCode}');
+      // log('push notification sent');
     } catch (e) {
       log('$e');
     }

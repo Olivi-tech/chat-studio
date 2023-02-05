@@ -26,9 +26,14 @@ class _MessageCardState extends State<MessageCard> {
   Widget build(BuildContext context) {
     double height = MediaQuery.of(context).size.height;
     double width = MediaQuery.of(context).size.width;
-    return _isCurrenUser
-        ? _myMessage(height: height, width: width)
-        : _friendMessage(height: height, width: width);
+    return InkWell(
+      onLongPress: () {
+        _openBottomSheet(context: context, height: height, width: width);
+      },
+      child: _isCurrenUser
+          ? _myMessage(height: height, width: width)
+          : _friendMessage(height: height, width: width),
+    );
   }
 
   Widget _myMessage({required double width, required double height}) {
@@ -153,6 +158,127 @@ class _MessageCardState extends State<MessageCard> {
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  _openBottomSheet(
+      {required BuildContext context,
+      required double height,
+      required double width}) {
+    showModalBottomSheet(
+      context: context,
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(15), topRight: Radius.circular(15))),
+      builder: (context) {
+        return Container(
+          child: ListView(
+            shrinkWrap: true,
+            children: [
+              Divider(
+                color: Colors.grey,
+                thickness: 3,
+                endIndent: width * 0.4,
+                indent: width * 0.4,
+              ),
+              widget.messagesModel.type == Type.text
+                  ? _item(
+                      icon: Icon(
+                        Icons.copy_all_rounded,
+                        color: Colors.blue,
+                      ),
+                      msg: 'Copy Text',
+                      onTap: () {},
+                    )
+                  : _item(
+                      icon: Icon(
+                        Icons.download_sharp,
+                        color: Colors.blue,
+                      ),
+                      msg: 'Download Image',
+                      onTap: () {},
+                    ),
+              if (_isCurrenUser)
+                Divider(
+                  color: Colors.grey.shade500,
+                  thickness: 1,
+                  endIndent: width * 0.05,
+                  indent: width * 0.05,
+                ),
+              if (_isCurrenUser && widget.messagesModel.type == Type.text)
+                _item(
+                  icon: Icon(
+                    Icons.mode_edit_outline_outlined,
+                    color: Colors.blue,
+                  ),
+                  msg: 'Edit Message',
+                  onTap: () {},
+                ),
+              if (_isCurrenUser)
+                _item(
+                  icon: Icon(
+                    Icons.delete_forever_rounded,
+                    color: Colors.red,
+                  ),
+                  msg: widget.messagesModel.type == Type.text
+                      ? 'Delete Message'
+                      : 'Delete Image',
+                  onTap: () {},
+                ),
+              Divider(
+                color: Colors.grey.shade500,
+                thickness: 1,
+                endIndent: width * 0.05,
+                indent: width * 0.05,
+              ),
+              _item(
+                icon: Icon(
+                  Icons.visibility_outlined,
+                  color: Colors.blue,
+                ),
+                msg: 'Sent at 11:56 AM',
+                onTap: () {},
+              ),
+              _item(
+                icon: Icon(
+                  Icons.visibility_outlined,
+                  color: Colors.green,
+                ),
+                msg: 'Read at 11:56 AM',
+                onTap: () {},
+              ),
+              Divider(
+                color: Colors.grey,
+                thickness: 3,
+                endIndent: width * 0.4,
+                indent: width * 0.4,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _item(
+      {required Icon icon, required String msg, required VoidCallback onTap}) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 5),
+        child: Row(
+          children: [
+            icon,
+            SizedBox(
+              width: 25,
+            ),
+            Text(
+              msg,
+              style: TextStyle(letterSpacing: 0.5),
+            ),
+          ],
+        ),
       ),
     );
   }
