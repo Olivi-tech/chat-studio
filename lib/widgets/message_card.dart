@@ -1,7 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:gallery_saver/gallery_saver.dart';
 import 'package:studio_chat/api/api.dart';
 import 'package:studio_chat/helper/date_time_format.dart';
+import 'package:studio_chat/helper/show_snack_bar.dart';
 
 import '../models/messages_model.dart';
 
@@ -189,7 +192,13 @@ class _MessageCardState extends State<MessageCard> {
                         color: Colors.blue,
                       ),
                       msg: 'Copy Text',
-                      onTap: () {},
+                      onTap: () async {
+                        await Clipboard.setData(
+                            ClipboardData(text: widget.messagesModel.msg));
+                        Navigator.pop(context);
+                        SnackBarHelper.showSnack(
+                            context: context, msg: 'Text Copied');
+                      },
                     )
                   : _item(
                       icon: Icon(
@@ -197,11 +206,30 @@ class _MessageCardState extends State<MessageCard> {
                         color: Colors.blue,
                       ),
                       msg: 'Download Image',
-                      onTap: () {},
+                      onTap: () {
+                        try {
+                          GallerySaver.saveImage(widget.messagesModel.msg,
+                                  albumName: 'Studio Chat')
+                              .then((value) {
+                            if (value != null && value) {
+                              Navigator.pop(context);
+                              SnackBarHelper.showSnack(
+                                  context: context,
+                                  durationSeconds: 1,
+                                  msg: 'Image Saved Successfully');
+                            }
+                          });
+                        } catch (e) {
+                          SnackBarHelper.showSnack(
+                              context: context,
+                              durationSeconds: 1,
+                              msg: 'Error While Saving Image');
+                        }
+                      },
                     ),
               if (_isCurrenUser)
                 Divider(
-                  color: Colors.grey.shade500,
+                  color: Colors.grey,
                   thickness: 1,
                   endIndent: width * 0.05,
                   indent: width * 0.05,
@@ -213,7 +241,10 @@ class _MessageCardState extends State<MessageCard> {
                     color: Colors.blue,
                   ),
                   msg: 'Edit Message',
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.pop(context);
+                    _showAlertDialog(context: context);
+                  },
                 ),
               if (_isCurrenUser)
                 _item(
@@ -224,10 +255,13 @@ class _MessageCardState extends State<MessageCard> {
                   msg: widget.messagesModel.type == Type.text
                       ? 'Delete Message'
                       : 'Delete Image',
-                  onTap: () {},
+                  onTap: () async {
+                    await APIs.deleteMessage(message: widget.messagesModel);
+                    Navigator.pop(context);
+                  },
                 ),
               Divider(
-                color: Colors.grey.shade500,
+                color: Colors.grey,
                 thickness: 1,
                 endIndent: width * 0.05,
                 indent: width * 0.05,
@@ -237,7 +271,8 @@ class _MessageCardState extends State<MessageCard> {
                   Icons.visibility_outlined,
                   color: Colors.blue,
                 ),
-                msg: 'Sent at 11:56 AM',
+                msg:
+                    'Sent at: ${DateTimeFormat.getSentTime(time: widget.messagesModel.sent)}',
                 onTap: () {},
               ),
               _item(
@@ -245,7 +280,9 @@ class _MessageCardState extends State<MessageCard> {
                   Icons.visibility_outlined,
                   color: Colors.green,
                 ),
-                msg: 'Read at 11:56 AM',
+                msg: widget.messagesModel.read.isEmpty
+                    ? 'Read at: No seen yet'
+                    : 'Read at: ${DateTimeFormat.getSentTime(time: widget.messagesModel.read)}',
                 onTap: () {},
               ),
               Divider(
@@ -266,7 +303,7 @@ class _MessageCardState extends State<MessageCard> {
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 5),
+        padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 3),
         child: Row(
           children: [
             icon,
@@ -280,6 +317,65 @@ class _MessageCardState extends State<MessageCard> {
           ],
         ),
       ),
+    );
+  }
+
+  Future _showAlertDialog({required BuildContext context}) {
+    String updatedMsg = widget.messagesModel.msg;
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          titlePadding:
+              EdgeInsets.only(left: 15, right: 15, bottom: 0, top: 10),
+          contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+          title: Row(
+            children: [
+              Icon(
+                Icons.message_outlined,
+                color: Colors.blue,
+              ),
+              SizedBox(
+                width: 20,
+              ),
+              Text('Update Message')
+            ],
+          ),
+          content: TextFormField(
+            initialValue: widget.messagesModel.msg,
+            onChanged: (value) => updatedMsg = value,
+            decoration: InputDecoration(
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15))),
+          ),
+          actions: [
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(shape: StadiumBorder()),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text('Cancel'),
+            ),
+            SizedBox(width: 20),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(shape: StadiumBorder()),
+              onPressed: () async {
+                if (updatedMsg.trim().isNotEmpty) {
+                  Navigator.pop(context);
+                  FocusScope.of(context).unfocus();
+                  await APIs.updateMessage(
+                      updatedMsg: updatedMsg.trim(),
+                      message: widget.messagesModel);
+                } else if (updatedMsg.trim().isEmpty) {
+                  SnackBarHelper.showSnack(
+                      context: context, msg: 'Message can\'t be empty');
+                }
+              },
+              child: Text('Update'),
+            ),
+          ],
+        );
+      },
     );
   }
 }

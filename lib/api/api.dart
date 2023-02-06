@@ -210,4 +210,21 @@ class APIs {
       log('$e');
     }
   }
+
+  static Future<void> deleteMessage({required MessagesModel message}) async {
+    await FirebaseFirestore.instance
+        .collection('chats/${getChatId(message.toId)}/messages/')
+        .doc(message.sent)
+        .delete();
+    if (message.type == Type.image)
+      await storage.refFromURL(message.msg).delete();
+  }
+
+  static Future<void> updateMessage(
+      {required MessagesModel message, required String updatedMsg}) async {
+    await FirebaseFirestore.instance
+        .collection('chats/${getChatId(message.toId)}/messages/')
+        .doc(message.sent)
+        .update({'msg': updatedMsg});
+  }
 }

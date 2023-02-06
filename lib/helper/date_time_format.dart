@@ -1,11 +1,27 @@
-import 'dart:developer';
-
 import 'package:intl/intl.dart';
 
 class DateTimeFormat {
   static String formatTime({required String time}) {
     return DateFormat.jm()
         .format(DateTime.fromMillisecondsSinceEpoch(int.parse(time)));
+  }
+
+  static String getSentTime({required String time}) {
+    final sent = DateTime.fromMillisecondsSinceEpoch(int.parse(time));
+    final now = DateTime.now();
+    late final formattedTime;
+    if (sent.day == now.day &&
+        sent.month == now.month &&
+        sent.year == now.year) {
+      formattedTime = DateFormat.jm()
+          .format(DateTime.fromMillisecondsSinceEpoch(int.parse(time)));
+      return formattedTime;
+    }
+    formattedTime = DateFormat.jm()
+        .format(DateTime.fromMillisecondsSinceEpoch(int.parse(time)));
+    return sent.year == now.year
+        ? '$formattedTime - ${sent.day} ${getMonth(sent)}'
+        : '$formattedTime - ${sent.day} ${getMonth(sent)} ${sent.year}';
   }
 
   static String getLastMessageTime(String time) {
@@ -35,7 +51,6 @@ class DateTimeFormat {
         time.year == now.year) {
       return 'Last seen today at $formattedTime ';
     } else if ((now.difference(time).inHours / 24) == 1) {
-      log('last see today called');
       return 'Last seen yesterday at $formattedTime';
     }
 

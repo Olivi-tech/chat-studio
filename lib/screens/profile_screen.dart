@@ -101,7 +101,6 @@ class _UserProfileState extends State<UserProfile> {
                               TextFormField(
                                 initialValue: APIs.me.name,
                                 onSaved: (newValue) => APIs.me.name = newValue!,
-                                // onChanged: (value) => widget.name = value,
                                 validator: (value) =>
                                     value != null && value.isNotEmpty
                                         ? null
@@ -118,7 +117,6 @@ class _UserProfileState extends State<UserProfile> {
                                 initialValue: APIs.me.about,
                                 onSaved: (newValue) =>
                                     APIs.me.about = newValue!,
-                                // onChanged: (value) => about = value,
                                 validator: (value) =>
                                     value != null && value.isNotEmpty
                                         ? null

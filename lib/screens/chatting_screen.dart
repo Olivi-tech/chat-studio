@@ -283,7 +283,7 @@ class ChattingScreen extends StatelessWidget {
                           .isUploading = false;
                     } else {
                       SnackBarHelper.showSnack(
-                          context: context, msg: 'Image Not Selected');
+                          context: context, msg: 'Image Not Captured');
                     }
                   },
                   icon: Icon(
