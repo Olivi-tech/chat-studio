@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:studio_chat/api/api.dart';
 import 'package:studio_chat/helper/date_time_format.dart';
+import 'package:studio_chat/main.dart';
 import 'package:studio_chat/models/chat_user.dart';
 import 'package:studio_chat/models/messages_model.dart';
 import 'package:studio_chat/screens/chatting_screen.dart';
@@ -14,15 +15,12 @@ class ChatUserCard extends StatelessWidget {
   static MessagesModel? _message;
   @override
   Widget build(BuildContext context) {
-    double height = MediaQuery.of(context).size.height;
-    double width = MediaQuery.of(context).size.width;
-
     return Card(
       elevation: 0.5,
       margin: EdgeInsets.only(
-        left: width * 0.03,
-        right: width * 0.03,
-        top: height * 0.015,
+        left: mq.width * 0.03,
+        right: mq.width * 0.03,
+        top: mq.height * 0.015,
         // bottom: height * 0.01,
       ),
       color: Colors.blueGrey.shade100,
@@ -52,12 +50,13 @@ class ChatUserCard extends StatelessWidget {
                 builder: (context) => ProfileDialog(user: user),
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(height * 0.1),
+                borderRadius: BorderRadius.circular(mq.height * 0.1),
                 child: CachedNetworkImage(
                   imageUrl: user.image,
                   fit: BoxFit.cover,
-                  width: height <= 740 ? height * 0.07 : height * 0.06,
-                  height: height <= 740 ? height * 0.07 : height * 0.06,
+                  width: mq.height <= 740 ? mq.height * 0.07 : mq.height * 0.06,
+                  height:
+                      mq.height <= 740 ? mq.height * 0.07 : mq.height * 0.06,
                   errorWidget: (context, url, error) =>
                       Icon(Icons.person_2_outlined),
                   placeholder: (context, url) =>

@@ -8,6 +8,8 @@ import 'package:studio_chat/api/api.dart';
 import 'package:studio_chat/auth/auth_provider.dart';
 import 'package:studio_chat/helper/show_snack_bar.dart';
 
+import '../main.dart';
+
 class UserProfile extends StatefulWidget {
   const UserProfile({super.key});
 
@@ -21,9 +23,7 @@ class _UserProfileState extends State<UserProfile> {
   @override
   Widget build(BuildContext context) {
     log(_image == null ? 'null' : 'image is not null');
-    double height = MediaQuery.of(context).size.height;
-    double width = MediaQuery.of(context).size.width;
-    log('width: $width. height: $height');
+
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: WillPopScope(
@@ -51,29 +51,32 @@ class _UserProfileState extends State<UserProfile> {
                     children: [
                       _image != null
                           ? ClipRRect(
-                              borderRadius: BorderRadius.circular(height * 0.1),
+                              borderRadius:
+                                  BorderRadius.circular(mq.height * 0.1),
                               child: Image.file(
                                 File(_image!),
                                 fit: BoxFit.cover,
-                                width: height * 0.21,
-                                height: height * 0.21,
+                                width: mq.height * 0.21,
+                                height: mq.height * 0.21,
                               ))
                           : ClipRRect(
                               borderRadius:
-                                  BorderRadius.circular(height * 0.15),
+                                  BorderRadius.circular(mq.height * 0.15),
                               child: CachedNetworkImage(
                                 imageUrl: APIs.me.image,
                                 fit: BoxFit.cover,
-                                width: height * 0.21,
-                                height: height * 0.21,
+                                width: mq.height * 0.21,
+                                height: mq.height * 0.21,
                                 errorWidget: (context, url, error) =>
                                     Icon(Icons.person_2_outlined),
                                 placeholder: (context, url) =>
                                     Center(child: CircularProgressIndicator()),
                               )),
                       Positioned(
-                        top: height > 750 ? height * 0.15 : height * 0.2,
-                        left: width * 0.3,
+                        top: mq.height > 750
+                            ? mq.height * 0.15
+                            : mq.height * 0.2,
+                        left: mq.width * 0.3,
                         child: MaterialButton(
                             color: Colors.white,
                             elevation: 2,
@@ -81,19 +84,19 @@ class _UserProfileState extends State<UserProfile> {
                             child: Icon(Icons.edit_sharp),
                             onPressed: () => _showBottomSheet(
                                 context: context,
-                                height: height,
-                                width: width)),
+                                height: mq.height,
+                                width: mq.width)),
                       ),
                     ],
                   ),
-                  SizedBox(height: height * 0.02),
+                  SizedBox(height: mq.height * 0.02),
                   Text(
                     APIs.me.email,
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ),
-                  SizedBox(height: height * 0.03),
+                  SizedBox(height: mq.height * 0.03),
                   Container(
-                      height: height * 0.23,
+                      height: mq.height * 0.23,
                       child: Form(
                           key: _formKey,
                           child: Column(
@@ -131,15 +134,15 @@ class _UserProfileState extends State<UserProfile> {
                             ],
                           ))),
                   Container(
-                      height: height * 0.1,
+                      height: mq.height * 0.1,
                       child: SizedBox(
                         child: Center(
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
                                 shape: StadiumBorder(),
                                 minimumSize: Size(
-                                  width * 0.5,
-                                  height * 0.06,
+                                  mq.width * 0.5,
+                                  mq.height * 0.06,
                                 )),
                             onPressed: () async {
                               if (_formKey.currentState!.validate()) {

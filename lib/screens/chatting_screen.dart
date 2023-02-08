@@ -17,6 +17,8 @@ import 'package:studio_chat/provider/progress_provider.dart';
 import 'package:studio_chat/screens/view_profile.dart';
 import 'package:studio_chat/widgets/message_card.dart';
 
+import '../main.dart';
+
 class ChattingScreen extends StatelessWidget {
   const ChattingScreen({super.key, required this.user});
   final ChatUser user;
@@ -27,8 +29,7 @@ class ChattingScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     // _isDisplayingEmoji =
     //     Provider.of<EmojiProvider>(context, listen: false).isShowingEmoji;
-    double height = MediaQuery.of(context).size.height;
-    double width = MediaQuery.of(context).size.width;
+
     return WillPopScope(
       onWillPop: () {
         // log('_isDisplayingEmoji : ${Provider.of<EmojiProvider>(context, listen: false).isShowingEmoji}');
@@ -45,7 +46,7 @@ class ChattingScreen extends StatelessWidget {
         child: SafeArea(
           child: Scaffold(
             appBar: PreferredSize(
-              preferredSize: Size(width, 56),
+              preferredSize: Size(mq.width, 56),
               child: InkWell(
                   onTap: () => Navigator.push(
                       context,
@@ -55,8 +56,8 @@ class ChattingScreen extends StatelessWidget {
                           user: user,
                         ),
                       )),
-                  child:
-                      _appBar(context: context, height: height, width: width)),
+                  child: _appBar(
+                      context: context, height: mq.height, width: mq.width)),
             ),
             body: Column(children: [
               Expanded(
@@ -100,7 +101,7 @@ class ChattingScreen extends StatelessWidget {
                         alignment: Alignment.centerRight,
                         child: Padding(
                           padding: EdgeInsets.only(
-                              right: width * 0.15, bottom: height * 0.01),
+                              right: mq.width * 0.15, bottom: mq.height * 0.01),
                           child: CircularProgressIndicator(
                             strokeWidth: 3,
                           ),
@@ -113,7 +114,7 @@ class ChattingScreen extends StatelessWidget {
                   builder: (BuildContext context, value, child) =>
                       value.isShowingEmoji
                           ? SizedBox(
-                              height: height * 0.35,
+                              height: mq.height * 0.35,
                               child: EmojiPicker(
                                 textEditingController: _msgController,
                                 config: Config(
@@ -130,7 +131,7 @@ class ChattingScreen extends StatelessWidget {
     );
   }
 
-  AppBar _appBar(
+  Widget _appBar(
       {required BuildContext context,
       required double height,
       required double width}) {
@@ -190,7 +191,7 @@ class ChattingScreen extends StatelessWidget {
                               : 'last seen not available',
                         ),
                       ],
-                    )
+                    ),
                   ],
                 );
               } else {

@@ -5,6 +5,7 @@ import 'package:gallery_saver/gallery_saver.dart';
 import 'package:studio_chat/api/api.dart';
 import 'package:studio_chat/helper/date_time_format.dart';
 import 'package:studio_chat/helper/show_snack_bar.dart';
+import 'package:studio_chat/main.dart';
 
 import '../models/messages_model.dart';
 
@@ -27,25 +28,21 @@ class _MessageCardState extends State<MessageCard> {
 
   @override
   Widget build(BuildContext context) {
-    double height = MediaQuery.of(context).size.height;
-    double width = MediaQuery.of(context).size.width;
     return InkWell(
       onLongPress: () {
-        _openBottomSheet(context: context, height: height, width: width);
+        _openBottomSheet(context: context);
       },
-      child: _isCurrenUser
-          ? _myMessage(height: height, width: width)
-          : _friendMessage(height: height, width: width),
+      child: _isCurrenUser ? _myMessage() : _friendMessage(),
     );
   }
 
-  Widget _myMessage({required double width, required double height}) {
+  Widget _myMessage() {
     return Padding(
       padding: EdgeInsets.only(
-          top: height * 0.02,
-          right: height * 0.02,
-          left: width * 0.08,
-          bottom: height * 0.02),
+          top: mq.height * 0.02,
+          right: mq.height * 0.02,
+          left: mq.width * 0.08,
+          bottom: mq.height * 0.02),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -63,12 +60,13 @@ class _MessageCardState extends State<MessageCard> {
           Flexible(
             child: Container(
               padding: EdgeInsets.only(
-                top: height * 0.01,
-                left: height * 0.01,
-                right: height * 0.01,
-                bottom: height * 0.01,
+                top: mq.height * 0.01,
+                left: mq.height * 0.01,
+                right: mq.height * 0.01,
+                bottom: mq.height * 0.01,
               ),
-              margin: EdgeInsets.only(left: width * 0.04, right: width * 0.04),
+              margin: EdgeInsets.only(
+                  left: mq.width * 0.04, right: mq.width * 0.04),
               decoration: BoxDecoration(
                   color: Colors.blue.shade100,
                   borderRadius: BorderRadius.only(
@@ -103,28 +101,29 @@ class _MessageCardState extends State<MessageCard> {
     );
   }
 
-  Widget _friendMessage({required double width, required double height}) {
+  Widget _friendMessage() {
     if (widget.messagesModel.read.isEmpty) {
       APIs.updateReadStatusMessage(message: widget.messagesModel);
     }
     return Padding(
       padding: EdgeInsets.only(
-          top: height * 0.01,
-          right: height * 0.03,
-          left: width * 0.03,
-          bottom: height * 0.01),
+          top: mq.height * 0.01,
+          right: mq.height * 0.03,
+          left: mq.width * 0.03,
+          bottom: mq.height * 0.01),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Flexible(
             child: Container(
               padding: EdgeInsets.only(
-                top: height * 0.01,
-                left: height * 0.01,
-                right: height * 0.01,
-                bottom: height * 0.01,
+                top: mq.height * 0.01,
+                left: mq.height * 0.01,
+                right: mq.height * 0.01,
+                bottom: mq.height * 0.01,
               ),
-              margin: EdgeInsets.only(left: width * 0.04, right: width * 0.04),
+              margin: EdgeInsets.only(
+                  left: mq.width * 0.04, right: mq.width * 0.04),
               decoration: BoxDecoration(
                   color: Colors.blue.shade100,
                   borderRadius: BorderRadius.only(
@@ -165,10 +164,9 @@ class _MessageCardState extends State<MessageCard> {
     );
   }
 
-  _openBottomSheet(
-      {required BuildContext context,
-      required double height,
-      required double width}) {
+  _openBottomSheet({
+    required BuildContext context,
+  }) {
     showModalBottomSheet(
       context: context,
       shape: RoundedRectangleBorder(
@@ -182,8 +180,8 @@ class _MessageCardState extends State<MessageCard> {
               Divider(
                 color: Colors.grey,
                 thickness: 3,
-                endIndent: width * 0.4,
-                indent: width * 0.4,
+                endIndent: mq.width * 0.4,
+                indent: mq.width * 0.4,
               ),
               widget.messagesModel.type == Type.text
                   ? _item(
@@ -231,8 +229,8 @@ class _MessageCardState extends State<MessageCard> {
                 Divider(
                   color: Colors.grey,
                   thickness: 1,
-                  endIndent: width * 0.05,
-                  indent: width * 0.05,
+                  endIndent: mq.width * 0.05,
+                  indent: mq.width * 0.05,
                 ),
               if (_isCurrenUser && widget.messagesModel.type == Type.text)
                 _item(
@@ -263,8 +261,8 @@ class _MessageCardState extends State<MessageCard> {
               Divider(
                 color: Colors.grey,
                 thickness: 1,
-                endIndent: width * 0.05,
-                indent: width * 0.05,
+                endIndent: mq.width * 0.05,
+                indent: mq.width * 0.05,
               ),
               _item(
                 icon: Icon(
@@ -288,8 +286,8 @@ class _MessageCardState extends State<MessageCard> {
               Divider(
                 color: Colors.grey,
                 thickness: 3,
-                endIndent: width * 0.4,
-                indent: width * 0.4,
+                endIndent: mq.width * 0.4,
+                indent: mq.width * 0.4,
               ),
             ],
           ),

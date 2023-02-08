@@ -1,9 +1,10 @@
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:studio_chat/api/api.dart';
-import 'package:studio_chat/auth/auth_provider.dart';
-import 'package:studio_chat/helper/show_snack_bar.dart';
+import 'package:studio_chat/main.dart';
 import 'package:studio_chat/models/chat_user.dart';
 import 'package:studio_chat/provider/is_searching.dart';
 import 'package:studio_chat/screens/profile_screen.dart';
@@ -22,7 +23,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   List<ChatUser> _usersList = [];
   List<ChatUser> _searchList = [];
   late Stream<QuerySnapshot<Map<String, dynamic>>> snapshots;
-
+  // late bool _hasNewItemProvider;
   @override
   void initState() {
     super.initState();
@@ -68,7 +69,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    final double height = MediaQuery.of(context).size.height;
     bool _searchingProvider =
         Provider.of<IsSearching>(context, listen: false).isSearching;
     return GestureDetector(
@@ -77,7 +77,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         onWillPop: () {
           if (_searchingProvider) {
             Provider.of<IsSearching>(context, listen: false).isSearching =
-                !Provider.of<IsSearching>(context, listen: false).isSearching;
+                false;
             return Future.value(false);
           } else {
             return Future.value(true);
@@ -95,14 +95,17 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                         _searchList.clear();
                         for (var i in _usersList) {
                           if (i.name
+                                  .trim()
                                   .toLowerCase()
-                                  .contains(value.toLowerCase()) ||
+                                  .contains(value.trim().toLowerCase()) ||
                               i.email
-                                  .toUpperCase()
-                                  .contains(value.toLowerCase())) {
+                                  .trim()
+                                  .toLowerCase()
+                                  .contains(value.trim().toLowerCase())) {
                             _searchList.add(i);
                           }
                         }
+
                         setState(() {});
                       },
                       decoration: InputDecoration(
@@ -110,12 +113,13 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                           fillColor: Colors.white,
                           contentPadding: EdgeInsets.symmetric(
                               horizontal: 15, vertical: 10),
-                          hintText: 'Search name',
+                          hintText: 'By Fname or email',
                           hintStyle: TextStyle(
-                            color: Colors.white,
+                            color: Colors.black,
                             fontSize: 16,
                           ),
-                          constraints: BoxConstraints(maxHeight: height * 0.06),
+                          constraints:
+                              BoxConstraints(maxHeight: mq.height * 0.06),
                           border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10))),
                     )
@@ -129,7 +133,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                   icon: Icon(
                       value.isSearching ? Icons.cancel_outlined : Icons.search),
                   onPressed: () {
+                    log('before tap : ${value.isSearching}');
                     value.isSearching = !value.isSearching;
+                    log('after tap : ${value.isSearching}');
                   },
                 ),
               ),
@@ -152,7 +158,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 final data = snapshot.data!.docs;
                 _usersList =
                     data.map((e) => ChatUser.fromJson(e.data())).toList();
-
                 if (_usersList.isNotEmpty) {
                   return ListView.builder(
                     itemCount: _searchingProvider
@@ -160,7 +165,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                         : _usersList.length,
                     physics: BouncingScrollPhysics(),
                     itemBuilder: (BuildContext context, int index) {
-                      // log('user at home page ${_usersList.toString()}');
+                      log('_searchingProvider: $_searchingProvider');
+                      log('users list : ${_usersList.length}');
+                      log('_search list : ${_searchList.length}');
                       return ChatUserCard(
                         user: _searchingProvider
                             ? _searchList[index]
@@ -179,13 +186,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
               }
               return SizedBox();
             },
-          ),
-          floatingActionButton: FloatingActionButton(
-            onPressed: () async {
-              final String status = await AuthProvider.logOut();
-              SnackBarHelper.showSnack(context: context, msg: status);
-            },
-            child: const Icon(Icons.chat_outlined),
           ),
         ),
       ),

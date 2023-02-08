@@ -12,6 +12,7 @@ import 'package:studio_chat/provider/sign_in_provider.dart';
 import 'package:studio_chat/screens/status_page.dart';
 import 'firebase_options.dart';
 
+late Size mq;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
